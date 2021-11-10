@@ -110,8 +110,6 @@ export class UserController {
    */
   @Delete('/user/delete')
   deleteUser(@Query('id', ParseIntPipe) id: number): User[] {
-    console.log('id : ', id);
-
     return this.userService.deleteUser(id);
   }
 }
