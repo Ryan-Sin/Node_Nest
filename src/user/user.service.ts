@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 
 const users: User[] = [
   { id: 1, name: '유저1' },
@@ -12,12 +13,12 @@ export class UserService {
    * @author Ryan
    * @description 유저 생성
    *
-   * @param id 유저 고유 아이디
-   * @param name 유저 이름
+   * @param createUserDto 유저 데이터
+   *
    * @returns {User[]} users
    */
-  onCreateUser(id: number, name: string): User[] {
-    return users.concat({ id, name });
+  onCreateUser(createUserDto: CreateUserDto): User[] {
+    return users.concat({ id: createUserDto.id, name: createUserDto.name });
   }
 
   /**
@@ -47,9 +48,9 @@ export class UserService {
    *
    * @returns {User} users
    */
-  setUser(id: number, name: string): User {
+  setUser(id: number, updateUserDto: UpdateUserDto): User {
     return users.find((data) => {
-      if (data.id == id) return (data.name = name);
+      if (data.id == id) return (data.name = updateUserDto.name);
     });
   }
 
@@ -57,12 +58,15 @@ export class UserService {
    * @author Ryan
    * @description 전체 유저 수정
    *
+   * @param id 유저 고유 아이디
+   * @param updateUserDto 유저 정보
+   *
    * @returns {User[]} users
    */
-  setAllUser(id, name): User[] {
+  setAllUser(updateUserDto: UpdateUserDto): User[] {
     return users.map((data) => {
-      if (data.id == id) {
-        data.name = name;
+      if (data.id == updateUserDto.id) {
+        data.name = updateUserDto.name;
       }
 
       return {
