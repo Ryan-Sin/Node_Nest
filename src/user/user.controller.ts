@@ -9,12 +9,12 @@ import {
   Put,
   Query,
   UsePipes,
-  ParseIntPipe,
   ValidationPipe,
-  DefaultValuePipe,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
+import { User } from 'src/entity/user.entity';
 
 @Controller('user')
 export class UserController {
@@ -36,7 +36,7 @@ export class UserController {
    */
   @Post('/create_user')
   @UsePipes(ValidationPipe)
-  onCreateUser(@Body() createUserDto: CreateUserDto): User[] {
+  onCreateUser(@Body() createUserDto: CreateUserDto): Promise<boolean> {
     return this.userService.onCreateUser(createUserDto);
   }
 
@@ -45,7 +45,7 @@ export class UserController {
    * @description 전체 유저 조회
    */
   @Get('/user_all')
-  getUserAll(): User[] {
+  getUserAll(): Promise<User[]> {
     return this.userService.getUserAll();
   }
 
@@ -56,9 +56,7 @@ export class UserController {
    * @param id 유저 고유 아이디
    */
   @Get('/user')
-  findByUserOne1(
-    @Query('id', new DefaultValuePipe(1), ParseIntPipe) id: number,
-  ): User {
+  findByUserOne1(@Query('id', ParseUUIDPipe) id: string): Promise<User> {
     return this.userService.findByUserOne(id);
   }
 
@@ -69,7 +67,7 @@ export class UserController {
    * @param id 유저 고유 아이디
    */
   @Get('/user/:id')
-  findByUserOne2(@Param('id', ParseIntPipe) id: number): User {
+  findByUserOne2(@Param('id', ParseUUIDPipe) id: string): Promise<User> {
     return this.userService.findByUserOne(id);
   }
 
@@ -83,22 +81,21 @@ export class UserController {
   @Patch('/user/:id')
   @UsePipes(ValidationPipe)
   setUser(
-    @Param('id', ParseIntPipe) id: number,
+    @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,
-  ): User {
+  ): Promise<boolean> {
     return this.userService.setUser(id, updateUserDto);
   }
 
   /**
    * @author Ryan
-   * @description @Param & @Body 혼합 방식 - 전체 유저 수정
+   * @description @Body 방식 - 전체 유저 수정
    *
-   * @param id 유저 고유 아이디
    * @param updateUserDto 유저 정보
    */
   @Put('/user/update')
   @UsePipes(ValidationPipe)
-  setAllUser(@Body() updateUserDto: UpdateUserDto): User[] {
+  setAllUser(@Body() updateUserDto: UpdateUserDto[]): Promise<boolean> {
     return this.userService.setAllUser(updateUserDto);
   }
 
@@ -109,7 +106,7 @@ export class UserController {
    * @param id 유저 고유 아이디
    */
   @Delete('/user/delete')
-  deleteUser(@Query('id', ParseIntPipe) id: number): User[] {
+  deleteUser(@Query('id', ParseUUIDPipe) id: string): Promise<boolean> {
     return this.userService.deleteUser(id);
   }
 }
