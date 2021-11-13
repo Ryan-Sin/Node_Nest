@@ -4,12 +4,18 @@ import {
   MiddlewareConsumer,
   RequestMethod,
 } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { typeORMConfig } from './configs/typeorm.config';
+
 import { UserModule } from './user/user.module';
 import { AuthMiddleware } from './middleware/auth.middleware';
 import { UserController } from './user/user.controller';
 
 @Module({
-  imports: [UserModule],
+  imports: [
+    TypeOrmModule.forRoot(typeORMConfig), // TypeORM 설정 파일 연결
+    UserModule,
+  ],
   controllers: [],
   providers: [],
 })
