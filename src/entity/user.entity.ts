@@ -7,7 +7,12 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   Unique,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
+import { CompanyInformation } from './company_infomation.entity';
+import { Profile } from './profile.entity';
 
 @Entity({ name: 'user' })
 @Unique(['user_id'])
@@ -38,4 +43,25 @@ export class User extends BaseEntity {
 
   @DeleteDateColumn({ name: 'delete_at', comment: '삭제일' })
   deletedAt?: Date | null;
+
+  /**
+   * 1 : 1 관계 설정
+   * @OneToOne -> 해당 엔티티(User) To 대상 엔티티(Profile)
+   *              하나의 유저는 하나의 개인정보를 갖는다.
+   */
+  @OneToOne(() => Profile)
+  @JoinColumn({ name: 'profile_id' })
+  profile: Profile;
+
+  /**
+   * 1 : M 관계 설정
+   * @ManyToOne -> 해당 엔티티(User) To 대상 엔티티(CompanyInformation)
+   *               여러 유저는 하나의 회사에 소속
+   */
+  @ManyToOne(
+    () => CompanyInformation,
+    (comapnyInformation) => comapnyInformation.userId,
+  )
+  @JoinColumn({ name: 'company_id' })
+  companyInformation: CompanyInformation;
 }
