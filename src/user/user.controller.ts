@@ -11,10 +11,13 @@ import {
   UsePipes,
   ValidationPipe,
   ParseUUIDPipe,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from 'src/entity/user.entity';
+import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -108,5 +111,13 @@ export class UserController {
   @Delete('/user/delete')
   deleteUser(@Query('id', ParseUUIDPipe) id: string): Promise<boolean> {
     return this.userService.deleteUser(id);
+  }
+
+  @UseGuards(LocalAuthGuard)
+  @Post('/auth/login')
+  async login(@Request() req) {
+    console.log('Login Route');
+
+    return req.user;
   }
 }
