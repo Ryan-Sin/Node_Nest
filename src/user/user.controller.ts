@@ -18,6 +18,7 @@ import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from 'src/entity/user.entity';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -47,6 +48,7 @@ export class UserController {
    * @author Ryan
    * @description 전체 유저 조회
    */
+  @UseGuards(JwtAuthGuard)
   @Get('/user_all')
   getUserAll(): Promise<User[]> {
     return this.userService.getUserAll();
@@ -113,6 +115,13 @@ export class UserController {
     return this.userService.deleteUser(id);
   }
 
+  /**
+   * @author Ryan
+   * @description 로그인
+   *
+   * @param req Request 데코레이터
+   * @returns User
+   */
   @UseGuards(LocalAuthGuard)
   @Post('/auth/login')
   async login(@Request() req) {
