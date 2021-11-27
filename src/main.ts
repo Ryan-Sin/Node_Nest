@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { HttpExceptionFilter } from './utils/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  //예외 필터 연결
+  app.useGlobalFilters(new HttpExceptionFilter());
 
   //Global Middleware 설정 -> Cors 속성 활성화
   app.enableCors({
@@ -25,7 +29,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-      disableErrorMessages: false,
+      disableErrorMessages: true,
     }),
   );
   await app.listen(3000);

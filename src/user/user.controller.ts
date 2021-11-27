@@ -13,18 +13,24 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Request,
+  HttpStatus,
+  Res,
+  UseFilters,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from 'src/entity/user.entity';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { HttpExceptionFilter } from 'src/utils/http-exception.filter';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get() //경로를 설정하지 않으면 "user/" 경로로 설정이 된다.
+  @UseFilters(new HttpExceptionFilter())
   getHelloWorld(): string {
     return this.userService.getHelloWorld();
   }
@@ -40,8 +46,10 @@ export class UserController {
    */
   @Post('/create_user')
   @UsePipes(ValidationPipe)
-  onCreateUser(@Body() createUserDto: CreateUserDto): Promise<boolean> {
-    return this.userService.onCreateUser(createUserDto);
+  onCreateUser(@Res() res: Response, @Body() createUserDto: CreateUserDto) {
+    return this.userService.onCreateUser(createUserDto).then((result) => {
+      res.status(HttpStatus.OK).json({ success: result });
+    });
   }
 
   /**
@@ -50,8 +58,10 @@ export class UserController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('/user_all')
-  getUserAll(): Promise<User[]> {
-    return this.userService.getUserAll();
+  getUserAll(@Res() res: Response) {
+    return this.userService.getUserAll().then((result) => {
+      res.status(HttpStatus.OK).json({ success: true, data: result });
+    });
   }
 
   /**
