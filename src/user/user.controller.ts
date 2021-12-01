@@ -13,18 +13,34 @@ import {
   ParseUUIDPipe,
   UseGuards,
   Request,
+  HttpStatus,
+  Res,
+  UseFilters,
+  UseInterceptors,
+  UploadedFiles,
+  Bind,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/user.dto';
 import { User } from 'src/entity/user.entity';
 import { LocalAuthGuard } from 'src/auth/guards/local-auth.guard';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { HttpExceptionFilter } from 'src/utils/http-exception.filter';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  multerDiskOptions,
+  multerDiskDestinationOutOptions,
+  multerMemoryOptions,
+} from 'src/utils/multer.options';
 
+let userId = '';
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get() //경로를 설정하지 않으면 "user/" 경로로 설정이 된다.
+  @UseFilters(new HttpExceptionFilter())
   getHelloWorld(): string {
     return this.userService.getHelloWorld();
   }
@@ -40,8 +56,10 @@ export class UserController {
    */
   @Post('/create_user')
   @UsePipes(ValidationPipe)
-  onCreateUser(@Body() createUserDto: CreateUserDto): Promise<boolean> {
-    return this.userService.onCreateUser(createUserDto);
+  onCreateUser(@Res() res: Response, @Body() createUserDto: CreateUserDto) {
+    return this.userService.onCreateUser(createUserDto).then((result) => {
+      res.status(HttpStatus.OK).json({ success: result });
+    });
   }
 
   /**
@@ -50,8 +68,10 @@ export class UserController {
    */
   @UseGuards(JwtAuthGuard)
   @Get('/user_all')
-  getUserAll(): Promise<User[]> {
-    return this.userService.getUserAll();
+  getUserAll(@Res() res: Response) {
+    return this.userService.getUserAll().then((result) => {
+      res.status(HttpStatus.OK).json({ success: true, data: result });
+    });
   }
 
   /**
@@ -128,5 +148,75 @@ export class UserController {
     console.log('Login Route');
 
     return req.user;
+  }
+
+  /**
+   * @author Ryan
+   * @description 디스크 방식 파일 업로드 (1)-> Destination 옵션 설정
+   *
+   * @param {File[]} files 다중 파일
+   * @param res Response 객체
+   */
+  @Post('/disk_upload1')
+  @UseInterceptors(FilesInterceptor('files', null, multerDiskOptions))
+  @Bind(UploadedFiles())
+  uploadFileDisk(files: File[], @Res() res: Response) {
+    res.status(HttpStatus.OK).json({
+      success: true,
+      data: this.userService.uploadFileDisk(files),
+    });
+  }
+
+  /**
+   * @author Ryan
+   * @description 디스크 방식 파일 업로드 (2)-> Destination 옵션 미설정
+   *
+   * @param {File[]} files 다중 파일
+   * @param  user_id 유저 아이디
+   * @param res Response 객체
+   */
+  @Post('/disk_upload2')
+  @UseInterceptors(
+    FilesInterceptor('files', null, multerDiskDestinationOutOptions),
+  )
+  @Bind(UploadedFiles())
+  uploadFileDiskDestination(
+    files: File[],
+    @Body('user_id') user_id: string,
+    @Res() res: Response,
+  ) {
+    if (user_id != undefined) {
+      userId = user_id;
+    }
+
+    res.status(HttpStatus.OK).json({
+      success: true,
+      data: this.userService.uploadFileDiskDestination(userId, files),
+    });
+  }
+
+  /**
+   * @author Ryan
+   * @description 메모리 방식 파일 업로드
+   *
+   * @param {File[]} files 다중 파일
+   * @param  user_id 유저 아이디
+   * @param res Response 객체
+   */
+  @Post('/memory_upload')
+  @UseInterceptors(FilesInterceptor('files', null, multerMemoryOptions))
+  @Bind(UploadedFiles())
+  uploadFileMemory(
+    files: File[],
+    @Body('user_id') user_id: string,
+    @Res() res: Response,
+  ) {
+    if (user_id != undefined) {
+      userId = user_id;
+    }
+    res.status(HttpStatus.OK).json({
+      success: true,
+      data: this.userService.uploadFileMemory(userId, files),
+    });
   }
 }
