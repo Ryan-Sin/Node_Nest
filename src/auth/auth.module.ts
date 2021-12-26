@@ -14,8 +14,8 @@ import { JwtStrategy } from './strategies/auth.jwt.strategy';
     JwtModule.register({
       //토큰 서명 값 설정
       secret: jwtConstants.secret,
-      //토큰 유효시간 (임의 60초)
-      signOptions: { expiresIn: '60s' },
+      //토큰 유효시간 (임의 1시간)
+      signOptions: { expiresIn: '1h' },
     }),
     TypeOrmModule.forFeature([UserRepository]),
   ],
