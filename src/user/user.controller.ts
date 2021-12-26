@@ -33,9 +33,17 @@ import {
   multerDiskDestinationOutOptions,
   multerMemoryOptions,
 } from 'src/utils/multer.options';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
+import { SignInDto } from './dto/sign_in.dto';
 
 let userId = '';
 @Controller('user')
+@ApiTags('User') // Swagger Tage 설정
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -56,6 +64,16 @@ export class UserController {
    */
   @Post('/create_user')
   @UsePipes(ValidationPipe)
+  @ApiOperation({
+    summary: '유저 생성',
+    description: '유저 생성 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: { success: true },
+    },
+  })
   onCreateUser(@Res() res: Response, @Body() createUserDto: CreateUserDto) {
     return this.userService.onCreateUser(createUserDto).then((result) => {
       res.status(HttpStatus.OK).json({ success: result });
@@ -66,8 +84,34 @@ export class UserController {
    * @author Ryan
    * @description 전체 유저 조회
    */
-  @UseGuards(JwtAuthGuard)
   @Get('/user_all')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('access-token') //JWT 토큰 키 설정
+  @ApiOperation({
+    summary: '전체 유저 조회',
+    description: '전체 유저 조회 API',
+  })
+  @ApiCreatedResponse({
+    description: '성공여부',
+    schema: {
+      example: {
+        success: true,
+        data: [
+          {
+            id: 'cea1d926-6f1b-4a37-a46c-8ddf0b17a0bc',
+            user_id: 'Ryan',
+            password: '1234qweR!!',
+            salt: '임시',
+            name: 'Ryan',
+            age: 25,
+            createdAt: '2021-12-25T23:30:51.371Z',
+            updatedAt: '2021-12-25T23:30:51.371Z',
+            deletedAt: null,
+          },
+        ],
+      },
+    },
+  })
   getUserAll(@Res() res: Response) {
     return this.userService.getUserAll().then((result) => {
       res.status(HttpStatus.OK).json({ success: true, data: result });
@@ -142,9 +186,31 @@ export class UserController {
    * @param req Request 데코레이터
    * @returns User
    */
-  @UseGuards(LocalAuthGuard)
   @Post('/auth/login')
-  async login(@Request() req) {
+  @UseGuards(LocalAuthGuard)
+  @ApiOperation({
+    summary: '로그인 API',
+    description: '아이디와 비밀번호를 통해 로그인을 진행',
+  })
+  @ApiCreatedResponse({
+    description: '로그인 정보',
+    schema: {
+      example: {
+        id: 'cea1d926-6f1b-4a37-a46c-8ddf0b17a0bc',
+        user_id: 'Ryan',
+        salt: '임시',
+        name: 'Ryan',
+        age: 25,
+        createdAt: '2021-12-25T23:30:51.371Z',
+        updatedAt: '2021-12-25T23:30:51.371Z',
+        deletedAt: null,
+        token:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNlYTFkOTI2LTZmMWItNGEzNy1hNDZjLThkZGYwYjE3YTBiYyIsInVzZXJfaWQiOiJSeWFuIiwic2FsdCI6IuyehOyLnCIsIm5hbWUiOiJSeWFuIiwiYWdlIjoyNSwiY3JlYXRlZEF0IjoiMjAyMS0xMi0yNVQyMzozMDo1MS4zNzFaIiwidXBkYXRlZEF0IjoiMjAyMS0xMi0yNVQyMzozMDo1MS4zNzFaIiwiZGVsZXRlZEF0IjpudWxsLCJpYXQiOjE2NDA1MDc0NzMsImV4cCI6MTY0MDUwNzUzM30.gm-Yf_C8szEOvcy-bK-r-CP4Nz6aCr1AgqvH8KonxvU',
+      },
+    },
+  })
+  // Swageer API를 사용하기 위해 DTO적용
+  async login(@Request() req, @Body() sign_in_dto: SignInDto) {
     console.log('Login Route');
 
     return req.user;

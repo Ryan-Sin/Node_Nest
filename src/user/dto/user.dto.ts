@@ -7,6 +7,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty } from '@nestjs/swagger';
 
 /**
  * @description SRP를 위반하는 구조이지만 테스트용으로 한 파일에 두 클래스를 선언했다.
@@ -14,10 +15,20 @@ import { PartialType } from '@nestjs/mapped-types';
  * SRP란: 한 클래스는 하나의 책임만 가져야한다. (단일 책임의 원칙)
  */
 export class CreateUserDto {
+  @ApiProperty({
+    example: 'Ryan',
+    description: '유저 아이디',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   user_id: string; // 유저 아이디
 
+  @ApiProperty({
+    example: '1234qweR!!',
+    description: '유저 비밀번호',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @MinLength(8)
@@ -31,10 +42,20 @@ export class CreateUserDto {
   )
   password: string; //유저 비밀번호
 
+  @ApiProperty({
+    example: 'Ryan',
+    description: '유저 이름',
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   name: string; // 유저 이름
 
+  @ApiProperty({
+    example: '25',
+    description: '유저 나이',
+    required: true,
+  })
   @IsNumber()
   @IsNotEmpty()
   age: number; //유저 나이

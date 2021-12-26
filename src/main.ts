@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { HttpExceptionFilter } from './utils/http-exception.filter';
 import { existsSync, mkdirSync } from 'fs';
+import { setupSwagger } from './utils/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -40,6 +41,10 @@ async function bootstrap() {
       disableErrorMessages: true,
     }),
   );
+
+  //Swagger 환경설정 연결
+  setupSwagger(app);
+
   await app.listen(3000);
 }
 bootstrap();
